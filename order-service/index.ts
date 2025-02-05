@@ -2,13 +2,13 @@ import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-import authRoutes from "./routes/authRoutes";
+import orderRoutes from "./routes/orderRoutes";
 import { connect } from "./config/db";
 
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5002;
 const corsOptions = {
   origin: 'http://localhost:3000', // Replace with your frontend URL
   methods: 'GET,POST,PUT,DELETE', // Allowed methods
@@ -28,8 +28,20 @@ app.use(cookieParser());
 connect();
 
 // Routes
-app.use("/api/auth", authRoutes);
+app.use("/api/order", orderRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
+
+
+
+
+
+
+
+
+
+// npm install express mongoose bcryptjs jsonwebtoken cookie-parser dotenv cors
+// npm install --save-dev @types/express @types/mongoose @types/bcryptjs @types/jsonwebtoken @types/cookie-parser @types/cors

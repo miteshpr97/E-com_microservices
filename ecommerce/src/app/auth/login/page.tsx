@@ -20,7 +20,7 @@ export default function LoginPage() {
 
       // API call with proper headers and cookies enabled
       const response = await axios.post(
-        "/api/users/login",
+        "http://localhost:5000/api/auth/login",
         user,
         { withCredentials: true } // Include cookies if the server sets any
       );

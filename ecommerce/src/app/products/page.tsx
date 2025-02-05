@@ -10,11 +10,13 @@ import Footer from "../components/Footer";
 // import Image from 'next/image';
 
 
-
-
 const ProductPage: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { products, loading, error } = useSelector((state: RootState) => state.products);
+
+
+  console.log(products);
+  
 
   const productsRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {

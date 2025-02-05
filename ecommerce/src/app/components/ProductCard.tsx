@@ -11,8 +11,6 @@ import { useDispatch } from "react-redux";
 import toast from "react-hot-toast";
 
 
-
-
 type Product = {
     _id: number;
     name: string;
@@ -42,7 +40,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ products }) => {
 
     return (
         <div className="max-w-full flex flex-wrap gap-6 justify-center p-4">
-            {products.map((product) => (
+            {Array.isArray(products) && products?.map((product) => (
                 <div key={product._id} className="w-64 bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
                     <img
                         className="w-full h-40 object-cover"

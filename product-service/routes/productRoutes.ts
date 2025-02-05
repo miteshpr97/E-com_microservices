@@ -1,16 +1,15 @@
 import { Router } from "express";
-import { loginUser, getUser, getMe } from "../controllers/authController";
+import { productAdd, productGet } from "../controllers/productController";
 import { RequestHandler } from "express"; // Import RequestHandler type
 
 const router = Router();
 
 // Explicitly cast loginUser to RequestHandler type
-router.post("/login", loginUser as RequestHandler);
+router.post("/add", productAdd as RequestHandler);
 
 // Route to create a new user (Registration)
-router.post("/register", getUser);
+router.get("/get", productGet);
 
-// Route to get user details (me) by userId
-router.get("/me/:userId", getMe);
+
 
 export default router;

@@ -93,15 +93,24 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
 
+
+  console.log(user, "datat show");
+  
+
   useEffect(() => {
     const fetchUser = async () => {
       const token = Cookies.get("token");
+      console.log(token, "token data");
+      
       if (token) {
         try {
           // Decode the token
           const decoded: { userId: string } = jwtDecode(token);
+
+          console.log(decoded, "jjj");
+          
           // Fetch user data using the decoded userId
-          const response = await fetch(`/api/users/me/${decoded.userId}`);
+          const response = await fetch(`http://localhost:5000/api/auth/me/${decoded.userId}`);
           if (!response.ok) throw new Error("Failed to fetch user data");
           const data: User = await response.json();
           setUser(data);
