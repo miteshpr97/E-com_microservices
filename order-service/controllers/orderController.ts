@@ -1,19 +1,192 @@
+// import { Request, Response, NextFunction } from "express";
+// import axios from "axios";
+// import OrderModel from "../models/Order";
+// import { OrderStatus } from "../models/Order";
+// import mongoose from "mongoose";
+
+// export const orderAdd = async (
+//   req: Request,
+//   res: Response,
+//   next: NextFunction
+// ): Promise<any> => {
+//   try {
+//     const { user, products, totalAmount, shippingAddress } = req.body;
+
+//     if (
+//       !user ||
+//       !Array.isArray(products) ||
+//       products.length === 0 ||
+//       !totalAmount ||
+//       !shippingAddress
+//     ) {
+//       return res.status(400).json({
+//         error:
+//           "Missing required fields: user, products, totalAmount, or shippingAddress",
+//       });
+//     }
+
+//     const session = await mongoose.startSession();
+//     session.startTransaction();
+
+//     try {
+//       // Get all product details in ONE API call
+//       const productIds = products.map((p) => p.productId);
+
+//       const productResponse = await axios.post(
+//         "http://localhost:5001/api/product/getbyids",
+//         { id: productIds }
+//       );
+//       const productData = productResponse.data; // Assuming the API returns an array of products
+
+//       const formattedProducts = [];
+
+//       for (const p of products) {
+//         const product = productData.find(
+//           (prod: { _id: any }) => prod._id === p.productId
+//         );
+
+//         if (!product) {
+//           throw new Error(`Product not found: ${p.productId}`);
+//         }
+
+//         if (product.stock < p.quantity) {
+//           throw new Error(`Not enough stock for product: ${product.name}`);
+//         }
+
+//         formattedProducts.push({
+//           productId: p.productId,
+//           name: p.name,
+//           quantity: p.quantity,
+//           price: p.price,
+//         });
+//       }
+
+//       // Deduct stock using Promise.all() for efficiency
+//       await Promise.all(
+//         formattedProducts.map(async (p) => {
+          
+//           try {
+//             const product = productData.find((prod: { _id: any }) => prod._id === p.productId);
+            
+//             if (product) {
+//               const newStock = product.stock - p.quantity;
+
+              
+              
+//               await axios.put(`http://localhost:5001/api/product/update/${p.productId}`, {
+//                 stock: newStock,
+//               });
+//             } else {
+//               console.warn(`Product with ID ${p.productId} not found in productData.`);
+//             }
+//           } catch (error) {
+//             console.error(`Failed to update stock for ${p.name}:`, error);
+//           }
+//         })
+//       );
+      
+
+//         // Create the order
+//         const newOrder = new OrderModel({
+//           user: new mongoose.Types.ObjectId(user),
+//           products: formattedProducts,
+//           totalAmount,
+//           shippingAddress,
+//           status: OrderStatus.PENDING,
+//         });
+
+//         await newOrder.save({ session });
+
+//         await session.commitTransaction();
+//         session.endSession();
+
+//         return res.status(201).json({
+//           message: "Order created successfully",
+//           order: newOrder,
+//         });
+//     } catch (error: any) {
+//       await session.abortTransaction();
+//       session.endSession();
+//       console.error("Error creating order:", error);
+//       return res.status(500).json({
+//         message: "Failed to create order",
+//         error: error.message,
+//       });
+//     }
+//   } catch (error: any) {
+//     console.error("Error creating order:");
+//     return res.status(500).json({
+//       message: "Failed to create order",
+//       error: error.message,
+//     });
+//   }
+// };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 import { Request, Response, NextFunction } from "express";
-import mongoose from "mongoose";
-import ProductModel from "../models/Product"; // Make sure to import ProductModel
+import axios from "axios";
 import OrderModel from "../models/Order";
 import { OrderStatus } from "../models/Order";
+import Stripe from "stripe";
+import mongoose from "mongoose";
+import dotenv from "dotenv";
+
+dotenv.config();
+
+
+
+const gateway = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
+  apiVersion: "2025-01-27.acacia",
+});
+
+
+
+interface Product {
+  productId: string;
+  name: string;
+  price: number;
+  quantity: number;
+}
+
+interface Order {
+  user: string;
+  products: Product[];
+  totalAmount: number;
+  shippingAddress: string;
+}
+
+
+
 
 export const orderAdd = async (
   req: Request,
   res: Response,
   next: NextFunction
 ): Promise<any> => {
-  try {
-    // Parse the request body
-    const { user, products, totalAmount, shippingAddress } = req.body;
+  
+    const { user, products, totalAmount, shippingAddress }:Order = req.body;
 
-    // Validate required fields
     if (
       !user ||
       !Array.isArray(products) ||
@@ -22,7 +195,8 @@ export const orderAdd = async (
       !shippingAddress
     ) {
       return res.status(400).json({
-        error: "Missing required fields: user, products, totalAmount, or shippingAddress",
+        error:
+          "Missing required fields: user, products, totalAmount, or shippingAddress",
       });
     }
 
@@ -30,72 +204,133 @@ export const orderAdd = async (
     session.startTransaction();
 
     try {
-      // Check stock availability & prepare order items
+
+      const consumer = await gateway.customers.create({
+        name: user,
+        address: {
+          line1: shippingAddress.split(",")[0],
+          postal_code: shippingAddress.split(",")[3]?.trim() || "",
+          city: shippingAddress.split(",")[1]?.trim() || "",
+          state: shippingAddress.split(",")[2]?.trim() || "",
+          country: "IN",
+        },
+      });
+  
+      const line_items = products.map((product) => ({
+        price_data: {
+          currency: "inr",
+          unit_amount: product.price * 100,
+          product_data: {
+            name: product.name,
+          },
+        },
+        quantity: product.quantity,
+      }));
+
+
+
+
+
+
+
+
+      // Get all product details in ONE API call
+      const productIds = products.map((p) => p.productId);
+
+      const productResponse = await axios.post(
+        "http://localhost:5001/api/product/getbyids",
+        { id: productIds }
+      );
+      const productData = productResponse.data; // Assuming the API returns an array of products
+
       const formattedProducts = [];
 
       for (const p of products) {
-        if (!p.productId || !p.quantity || !p.price) {
-          await session.abortTransaction();
-          session.endSession();
-
-          return res.status(400).json({
-            message: "Each product must have a valid 'productId', 'quantity', and 'price'.",
-          });
-        }
-
-        // Find product in DB
-        const product = await ProductModel.findById(p.productId).session(session);
+        const product = productData.find(
+          (prod: { _id: any }) => prod._id === p.productId
+        );
 
         if (!product) {
-          await session.abortTransaction();
-          session.endSession();
-          return res.status(404).json({
-            message: `Product not found: ${p.productId}`,
-          });
+          throw new Error(`Product not found: ${p.productId}`);
         }
 
-        // Check stock availability
         if (product.stock < p.quantity) {
-          await session.abortTransaction();
-          session.endSession();
-          return res.status(400).json({
-            message: `Not enough stock for product: ${product.name}`,
-          });
+          throw new Error(`Not enough stock for product: ${product.name}`);
         }
 
-        // Deduct stock
-        product.stock -= p.quantity;
-        await product.save({ session }); // Save stock update in the transaction
-
-        // Add to order
         formattedProducts.push({
-          productId: new mongoose.Types.ObjectId(p.productId),
+          productId: p.productId,
           name: p.name,
           quantity: p.quantity,
           price: p.price,
         });
       }
 
-      // Create a new order document
-      const newOrder = new OrderModel({
-        user: new mongoose.Types.ObjectId(user),
-        products: formattedProducts,
-        totalAmount,
-        shippingAddress,
-        status: OrderStatus.PENDING, // Default status
-      });
+      // Deduct stock using Promise.all() for efficiency
+      await Promise.all(
+        formattedProducts.map(async (p) => {
+          
+          try {
+            const product = productData.find((prod: { _id: any }) => prod._id === p.productId);
+            
+            if (product) {
+              const newStock = product.stock - p.quantity;
 
-      // Save the order
-      await newOrder.save({ session });
+              
+              
+              await axios.put(`http://localhost:5001/api/product/update/${p.productId}`, {
+                stock: newStock,
+              });
+            } else {
+              console.warn(`Product with ID ${p.productId} not found in productData.`);
+            }
+          } catch (error) {
+            console.error(`Failed to update stock for ${p.name}:`, error);
+          }
+        })
+      );
+      
 
-      // Commit transaction
-      await session.commitTransaction();
-      session.endSession();
+        // Create the order
+        const newOrder = new OrderModel({
+          user: new mongoose.Types.ObjectId(user),
+          products: formattedProducts,
+          totalAmount,
+          shippingAddress,
+          status: OrderStatus.PENDING,
+        });
 
-      return res.status(201).json({
-        message: "Order created successfully",
-        order: newOrder,
-      });
+        await newOrder.save({ session });
+
+        await session.commitTransaction();
+        session.endSession();
+
+        const checkoutSession = await gateway.checkout.sessions.create({
+          payment_method_types: ["card"],
+          customer: consumer.id,
+          line_items,
+          mode: "payment",
+          success_url: "https://your-app.com/success",
+          cancel_url: "https://your-app.com/cancel",
+        });
+    
+        if (checkoutSession.url) {
+          return res.status(201).json({
+            message: "Payment session created",
+            url: checkoutSession.url  
+          });
+  
+      
+      
+        }
+
+
+
+        
+        return res.status(201).json({
+          message: "Order created successfully",
+          order: newOrder,
+        });
     } catch (error: any) {
       await session.abortTransaction();
       session.endSession();
@@ -105,11 +340,6 @@ export const orderAdd = async (
         error: error.message,
       });
     }
-  } catch (error: any) {
-    console.error("Error creating order:", error);
-    return res.status(500).json({
-      message: "Failed to create order",
-      error: error.message,
-    });
-  }
+  
+  
 };

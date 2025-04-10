@@ -1,38 +1,27 @@
-
+import Image from 'next/image';
 
 const ProductList = () => {
     return (
-        <div className="max-w-full flex flex-wrap gap-6 justify-center p-4">
-            <div className="w-64 bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
-                <img
-                    className="w-full h-40 object-cover"
-                    src=""
-                    alt=""
-                />
-                <div className="p-4">
-                    <h2 className="text-lg font-semibold text-gray-800 truncate"></h2>
-                    <p className="text-sm text-gray-600 mt-1 line-clamp-2"></p>
-                    <div className="mt-3 flex items-center justify-between">
-                        <span className="text-md font-semibold text-gray-900"></span>
-                    </div>
-                    <div className="mt-3 flex gap-2">
-                        <button
-                            className="px-3 py-1 text-sm bg-secondary text-white rounded hover:bg-blue-600 transition duration-300"
+        <div className="max-w-full h-screen flex flex-col md:flex-row p-4 bg-red-500">
+            <div className="w-full md:w-1/4 bg-green-400 p-4 overflow-auto">lore</div>
+            <div className="w-full md:w-3/4 bg-yellow-400 p-4 overflow-auto">
+                <span>Home || Mobiles </span>
+                <hr />
+                <Image src="https://images.unsplash.com/photo-1567581935884-3349723552ca?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8bW9iaWxlfGVufDB8fDB8fHww" alt="" layout="fill" objectFit="cover" />
+                <img src="https://images.unsplash.com/photo-1567581935884-3349723552ca?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8bW9iaWxlfGVufDB8fDB8fHww" alt="" >
+                </img>
 
-                        >
-                            Add to Cart
-                        </button>
-                        <button
-                            className="px-3 py-1 text-sm bg-gray-700 text-white rounded hover:bg-gray-800 transition duration-300"
-
-                        >
-                            View
-                        </button>
-                    </div>
-                </div>
             </div>
+            <div className="w-[60%] bg-orange-500">2</div>
+            <div className="w-[20%] bg-green-500">3</div>
         </div>
-    )
+
+
+
+    );
 }
 
-export default ProductList
+export default ProductList;
+
+
+

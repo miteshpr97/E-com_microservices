@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
@@ -20,11 +21,14 @@ const ProductDetails: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
+  console.log(product, "hhhh");
+  
+
   useEffect(() => {
     const fetchProductData = async () => {
       try {
-        const res = await axios.get(`/api/products/${id}`);
-        setProduct(res.data.product);
+        const res = await axios.get(`http://localhost:5001/api/product/get/${id}`);
+        setProduct(res.data);
         setLoading(false);
       } catch (error: any) {
         setError('Failed to fetch product details.');

@@ -8,16 +8,18 @@ import { removeFromCart, incrementQuantity, decrementQuantity, clearCart } from 
 import Navbar from "../components/Navbar";
 import { useUser } from "../../context/UserContext";
 import axios from "axios";
-import { useRouter } from "next/navigation";
+// import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
+import { useState } from "react";
 
 const ViewCart: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const router = useRouter()
+  // const router = useRouter()
   const { user } = useUser();
   const { carts } = useSelector((state: RootState) => state.cart);
   const totalAmount = carts.reduce((total, item) => total + item.price * item.qnty, 0);
 
+  const [loading, setLoading] = useState(false);
 
 
   const isOutOfStock = carts.some(cart => cart.stock === 0);
@@ -41,6 +43,8 @@ const ViewCart: React.FC = () => {
 
 
   const orderPlace = async () => {
+    setLoading(true);
+
     if (carts.length === 0) {
       alert("Your cart is empty. Please add some items before checking out.");
       return;
@@ -57,12 +61,15 @@ const ViewCart: React.FC = () => {
       shippingAddress: (document.getElementById('address') as HTMLInputElement)?.value,
     };
     try {
-      const res = await axios.post('/api/orders/', orderDetails);
+      const res = await axios.post('http://localhost:5002/api/order/add', orderDetails);
+      const stripeCheckoutUrl = res.data.url;
+    
       if (res.status === 201) {
         toast.success("order successful!");
         setTimeout(() => {
           dispatch(clearCart());
-          router.push('/orders');
+          setLoading(false);
+          window.location.href = stripeCheckoutUrl;
         }, 2000);
       } else {
         alert("Failed to place order. Please try again.");
@@ -211,7 +218,8 @@ const ViewCart: React.FC = () => {
                   }}
                   disabled={isOutOfStock}
                 >
-                  Checkout
+                                 {loading ? "Loading..." : "Checkout"}
+
                 </button>
 
 

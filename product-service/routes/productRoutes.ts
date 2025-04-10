@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { productAdd, productGet } from "../controllers/productController";
+import { productAdd, productGet, getProductId, getProductsByIds, updateProductStock } from "../controllers/productController";
 import { RequestHandler } from "express"; // Import RequestHandler type
 
 const router = Router();
@@ -11,5 +11,20 @@ router.post("/add", productAdd as RequestHandler);
 router.get("/get", productGet);
 
 
+router.get("/get/:id", getProductId)
+router.post("/getbyids", getProductsByIds)
+
+
+
+// Route to update the product's stock
+router.put("/update/:productId", updateProductStock);
+
+
 
 export default router;
+
+
+
+
+
+
