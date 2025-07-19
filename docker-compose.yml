@@ -1,44 +1,6 @@
 version: '3.8'
 
 services:
-  auth:
-    build: ./auth
-    ports:
-      - "5000:5000"
-    volumes:
-      - ./auth:/app
-    depends_on:
-      - mongo
-
-  products:
-    build: ./products
-    ports:
-      - "5001:5001"
-    volumes:
-      - ./products:/app
-    depends_on:
-      - mongo
-
-  orders:
-    build: ./orders
-    ports:
-      - "5002:5002"
-    volumes:
-      - ./orders:/app
-    depends_on:
-      - mongo
-
-  client:
-    build: ./client
-    ports:
-      - "3000:3000"
-    volumes:
-      - ./client:/app
-    depends_on:
-      - auth
-      - products
-      - orders
-
   mongo:
     image: mongo
     container_name: mongo
@@ -46,6 +8,44 @@ services:
       - "27017:27017"
     volumes:
       - mongo-data:/data/db
+
+  auth-service:
+    build: ./auth-service
+    ports:
+      - "5000:5000"
+    depends_on:
+      - mongo
+    volumes:
+      - ./auth-service:/app
+
+  product-service:
+    build: ./product-service
+    ports:
+      - "5001:5001"
+    depends_on:
+      - mongo
+    volumes:
+      - ./product-service:/app
+
+  order-service:
+    build: ./order-service
+    ports:
+      - "5002:5002"
+    depends_on:
+      - mongo
+    volumes:
+      - ./order-service:/app
+
+  client:
+    build: ./ecommerce
+    ports:
+      - "3001:3000"
+    depends_on:
+      - auth-service
+      - product-service
+      - order-service
+    volumes:
+      - ./ecommerce:/app
 
 volumes:
   mongo-data:

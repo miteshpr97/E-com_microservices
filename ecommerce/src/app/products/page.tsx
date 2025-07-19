@@ -7,7 +7,17 @@ import { fetchProducts } from "../../store/slices/productSlice";
 import ProductCard from "../components/ProductCard"; // Import the ProductCard component
 import { RootState, AppDispatch } from "../../store";
 import Footer from "../components/Footer";
-// import Image from 'next/image';
+import Image from 'next/image';
+
+
+export interface Product {
+  _id: string;
+  name: string;
+  description: string;
+  image: string;
+  price: number;
+  // ...other fields
+}
 
 
 const ProductPage: React.FC = () => {
@@ -71,10 +81,13 @@ const ProductPage: React.FC = () => {
 
           {/* Hero Image */}
           <div className="md:w-1/2 flex justify-center mt-6 md:mt-0  ">
-            <img
+            <Image
               src="https://res.cloudinary.com/drdspnw8i/image/upload/v1738311745/wbzka08kxxkkicupuev2.png"
               alt="Product"
+              width={400}
+              height={400}
               className="w-full max-w-md object-contain rotate-[-30deg]"
+              priority
             />
           </div>
         </div>

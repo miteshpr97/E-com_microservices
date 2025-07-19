@@ -8,4 +8,10 @@ RUN npm install
 COPY . .
 
 EXPOSE 3000
-CMD ["npm", "run", "dev"]  # For Next.js development
+
+# For development (hot reload)
+CMD ["npm", "run", "dev"]
+
+# For production, use:
+# RUN npm run build
+# CMD ["npm", "start"]

@@ -2,12 +2,17 @@
 
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 
-interface Product {
-  id: string;
+type Product = {
+  _id: string;
   name: string;
+  description: string;
   price: number;
-  quantity?: number;
-}
+  image: string;
+  category?: string;
+  stock?: number;
+  createdAt?: string;
+  updatedAt?: string;
+};
 
 interface ProductState {
   products: Product[];

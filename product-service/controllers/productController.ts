@@ -1,38 +1,21 @@
 import { Request, Response, NextFunction } from "express";
-
-// Extend the Request interface to include the 'file' property
-declare global {
-  namespace Express {
-    interface Request {
-      file?: {
-        path: string;
-      };
-    }
-  }
-}
 import ProductModel from "../models/Product";
 import { uploadOnCloudinary } from "../utils/cloudinaryConfig";
 
-
-
-//add new product 
+// ✅ Add a new product
 export const productAdd = async (
   req: Request,
   res: Response,
   next: NextFunction
 ): Promise<any> => {
-  let productImagePath = null;
-
   try {
-    // Validate if file is uploaded
     if (!req.file) {
       return res.status(400).json({ error: "Please provide product image" });
     }
 
-    productImagePath = req.file.path;
+    const productImagePath = (req.file as Express.Multer.File).path;
 
-    // Upload image to Cloudinary
-    const productImageUrl = await uploadOnCloudinary(req.file.path);
+    const productImageUrl = await uploadOnCloudinary(productImagePath);
 
     if (!productImageUrl) {
       return res.status(500).json({
@@ -40,10 +23,8 @@ export const productAdd = async (
       });
     }
 
-    // Destructure fields from form-data body
     const { name, description, price, category, stock } = req.body;
 
-    // Create new product document
     const product = new ProductModel({
       name,
       description,
@@ -53,7 +34,6 @@ export const productAdd = async (
       stock,
     });
 
-    // Save to MongoDB
     const savedProduct = await product.save();
 
     return res.status(201).json({
@@ -68,8 +48,7 @@ export const productAdd = async (
   }
 };
 
-
-// get all product data
+// ✅ Get all products
 export const productGet = async (
   req: Request,
   res: Response,
@@ -77,17 +56,16 @@ export const productGet = async (
 ): Promise<any> => {
   try {
     const products = await ProductModel.find();
-
     return res.status(200).json(products);
   } catch (error) {
     console.error("Error fetching products:", error);
     return res.status(500).json({
-      error: "An error occurred while updating the address",
+      error: "An error occurred while fetching products",
     });
   }
 };
 
-// get indvual product data through id
+// ✅ Get product by ID
 export const getProductId = async (
   req: Request,
   res: Response,
@@ -96,27 +74,26 @@ export const getProductId = async (
   try {
     const id = req.params.id;
 
-    // Validate _id
     if (!id) {
-      return res.status(400).json({ error: "product ID is required" });
+      return res.status(400).json({ error: "Product ID is required" });
     }
+
     const product = await ProductModel.findById(id);
 
     if (!product) {
       return res.status(404).json({ error: "Product not found" });
     }
 
-    // Return the product
     return res.status(200).json(product);
   } catch (error) {
-    console.error("Error fetching user:", error);
+    console.error("Error fetching product:", error);
     return res.status(500).json({
-      error: "An error occurred while fetching the user. Please try again.",
+      error: "An error occurred while fetching the product",
     });
   }
 };
 
-// get multiple product data through id
+// ✅ Get multiple products by IDs
 export const getProductsByIds = async (
   req: Request,
   res: Response,
@@ -125,7 +102,6 @@ export const getProductsByIds = async (
   try {
     const { id } = req.body;
 
-    // Validate ids
     if (!id || !Array.isArray(id) || id.length === 0) {
       return res
         .status(400)
@@ -140,30 +116,23 @@ export const getProductsByIds = async (
         .json({ error: "No products found for the provided IDs" });
     }
 
-    // Return the products
     return res.status(200).json(products);
   } catch (error) {
     console.error("Error fetching products:", error);
     return res.status(500).json({
-      error: "An error occurred while fetching the products. Please try again.",
+      error: "An error occurred while fetching the products",
     });
   }
 };
 
-
-// update stcok when place orders
+// ✅ Update stock after order
 export const updateProductStock = async (
   req: Request,
   res: Response
 ): Promise<any> => {
-  console.log("hjnmkk");
-
   try {
     const { productId } = req.params;
     const { stock } = req.body;
-
-    console.log(productId, "productid...");
-    console.log(stock, "stcko....");
 
     if (stock < 0) {
       return res.status(400).json({
@@ -179,10 +148,7 @@ export const updateProductStock = async (
       });
     }
 
-    // Update the stock
     product.stock = stock;
-
-    // Save the updated product
     await product.save();
 
     return res.status(200).json({

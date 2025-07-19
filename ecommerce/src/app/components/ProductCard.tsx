@@ -12,11 +12,15 @@ import toast from "react-hot-toast";
 
 
 type Product = {
-    _id: number;
-    name: string;
-    description: string;
-    price: number;
-    image: string;
+  _id: string;
+  name: string;
+  description: string;
+  price: number;
+  image: string;
+  category?: string;
+  stock?: number;
+  createdAt?: string;
+  updatedAt?: string;
 };
 
 
@@ -27,6 +31,10 @@ type ProductCardProps = {
 
 
 const ProductCard: React.FC<ProductCardProps> = ({ products }) => {
+
+    console.log(products, "dgdgdg");
+    
+    
     const router = useRouter();
     const dispatch = useDispatch<AppDispatch>();
 
