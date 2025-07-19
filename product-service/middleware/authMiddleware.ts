@@ -12,7 +12,7 @@ export const requireAuth = (req: AuthRequest, res: Response, next: NextFunction)
     return res.status(401).json({ error: "Unauthorized, token missing" });
   }
 
-  jwt.verify(token, process.env.TOKEN_SECRET as string, (err, decoded) => {
+  jwt.verify(token, process.env.TOKEN_SECRET as string, (err: any, decoded: any) => {
     if (err) {
       return res.status(401).json({ error: "Unauthorized, invalid token" });
     }

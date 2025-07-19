@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  auth:
+    build: ./auth
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./auth:/app
+    depends_on:
+      - mongo
+
+  products:
+    build: ./products
+    ports:
+      - "5001:5001"
+    volumes:
+      - ./products:/app
+    depends_on:
+      - mongo
+
+  orders:
+    build: ./orders
+    ports:
+      - "5002:5002"
+    volumes:
+      - ./orders:/app
+    depends_on:
+      - mongo
+
+  client:
+    build: ./client
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./client:/app
+    depends_on:
+      - auth
+      - products
+      - orders
+
+  mongo:
+    image: mongo
+    container_name: mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+volumes:
+  mongo-data:

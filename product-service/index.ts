@@ -24,15 +24,19 @@ app.use(cors(corsOptions)); // Use the CORS middleware with the configured optio
 app.use(express.json());
 app.use(cookieParser()); 
 
-// Database Connection
-connect();
-
 // Routes
 app.use("/api/product", productRoutes);
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+// Database Connection
+const startServer = async () => {
+  await connect();
+
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+}
+
+startServer();
 
 
 
